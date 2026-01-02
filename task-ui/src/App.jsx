@@ -1,55 +1,67 @@
 import { useEffect, useState } from "react";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import {
+  fetchTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+} from "./api/tasks";
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const loadTasks = async () => {
+    try {
+      setError("");
+      setLoading(true);
+      const data = await fetchTasks();
+      setTasks(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setError(e?.message || "Failed to load tasks");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchTasks();
+    loadTasks();
   }, []);
-
-  const fetchTasks = async () => {
-    const res = await fetch(`/api/tasks`);
-    const data = await res.json();
-    setTasks(data);
-  };
 
   const addTask = async () => {
     if (!title.trim()) return;
 
-    await fetch(`/api/tasks`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description }),
-    });
-
-    setTitle("");
-    setDescription("");
-    fetchTasks();
+    try {
+      setError("");
+      await createTask({ title, description });
+      setTitle("");
+      setDescription("");
+      await loadTasks();
+    } catch (e) {
+      setError(e?.message || "Failed to create task");
+    }
   };
 
   const toggleTask = async (task) => {
-    await fetch(`/api/tasks/${task.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...task,
-        completed: !task.completed,
-      }),
-    });
-
-    fetchTasks();
+    try {
+      setError("");
+      await updateTask(task.id, { completed: !task.completed });
+      await loadTasks();
+    } catch (e) {
+      setError(e?.message || "Failed to update task");
+    }
   };
 
-  const deleteTask = async (id) => {
-    await fetch(`/api/tasks/${id}`, {
-      method: "DELETE",
-    });
-
-    fetchTasks();
+  const removeTask = async (id) => {
+    try {
+      setError("");
+      await deleteTask(id);
+      await loadTasks();
+    } catch (e) {
+      setError(e?.message || "Failed to delete task");
+    }
   };
 
   return (
@@ -60,6 +72,13 @@ export default function App() {
         <p className="text-gray-600 mt-1">
           React + Spring Boot + Docker + AWS
         </p>
+
+        {/* Error */}
+        {error && (
+          <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
 
         {/* Add Task */}
         <div className="bg-white rounded-xl shadow p-4 mt-6 flex gap-2">
@@ -85,53 +104,62 @@ export default function App() {
 
         {/* Tasks */}
         <div className="mt-6 space-y-4">
-          {tasks.map((task) => (
-            <div
-              key={task.id}
-              className="bg-white rounded-xl shadow p-4 flex justify-between items-start hover:shadow-md transition"
-            >
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {task.title}
-                </h3>
-                {task.description && (
-                  <p className="text-gray-600 text-sm mt-1">
-                    {task.description}
-                  </p>
-                )}
-                <p className="text-xs text-gray-400 mt-2">
-                  Created{" "}
-                  {new Date(task.createdAt).toLocaleDateString()}
-                </p>
+          {loading ? (
+            <div className="text-gray-600">Loading tasks...</div>
+          ) : tasks.length === 0 ? (
+            <div className="text-gray-600">No tasks yet.</div>
+          ) : (
+            tasks.map((task) => (
+              <div
+                key={task.id}
+                className="bg-white rounded-xl shadow p-4 flex justify-between items-start hover:shadow-md transition"
+              >
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {task.title}
+                  </h3>
+
+                  {task.description && (
+                    <p className="text-gray-600 text-sm mt-1">
+                      {task.description}
+                    </p>
+                  )}
+
+                  {task.createdAt && (
+                    <p className="text-xs text-gray-400 mt-2">
+                      Created {new Date(task.createdAt).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                      task.completed
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {task.completed ? "Completed" : "Pending"}
+                  </span>
+
+                  <button
+                    onClick={() => toggleTask(task)}
+                    className="text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    Toggle
+                  </button>
+
+                  <button
+                    onClick={() => removeTask(task.id)}
+                    className="text-red-600 hover:text-red-800 text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <span
-                  className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                    task.completed
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {task.completed ? "Completed" : "Pending"}
-                </span>
-
-                <button
-                  onClick={() => toggleTask(task)}
-                  className="text-blue-600 hover:text-blue-800 text-sm"
-                >
-                  Toggle
-                </button>
-
-                <button
-                  onClick={() => deleteTask(task.id)}
-                  className="text-red-600 hover:text-red-800 text-sm"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
