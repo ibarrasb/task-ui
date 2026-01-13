@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  fetchTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-} from "./api/tasks";
+import { fetchTasks, createTask, updateTask, deleteTask } from "./api/tasks";
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
@@ -69,9 +64,7 @@ export default function App() {
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <h1 className="text-4xl font-bold text-gray-900">Task Manager</h1>
-        <p className="text-gray-600 mt-1">
-          React + Spring Boot + Docker + AWS
-        </p>
+        <p className="text-gray-600 mt-1">React + Spring Boot + Docker + AWS</p>
 
         {/* Error */}
         {error && (
@@ -81,25 +74,27 @@ export default function App() {
         )}
 
         {/* Add Task */}
-        <div className="bg-white rounded-xl shadow p-4 mt-6 flex gap-2">
-          <input
-            className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring"
-            placeholder="Task title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <input
-            className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring"
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <button
-            onClick={addTask}
-            className="bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-700 transition"
-          >
-            Add
-          </button>
+        <div className="bg-white rounded-xl shadow p-4 mt-6">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              className="w-full sm:flex-1 min-w-0 border rounded-lg px-3 py-2 focus:outline-none focus:ring"
+              placeholder="Task title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <input
+              className="w-full sm:flex-1 min-w-0 border rounded-lg px-3 py-2 focus:outline-none focus:ring"
+              placeholder="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <button
+              onClick={addTask}
+              className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+              Add
+            </button>
+          </div>
         </div>
 
         {/* Tasks */}
@@ -114,13 +109,13 @@ export default function App() {
                 key={task.id}
                 className="bg-white rounded-xl shadow p-4 flex justify-between items-start hover:shadow-md transition"
               >
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800">
+                <div className="min-w-0">
+                  <h3 className="text-lg font-semibold text-gray-800 break-words">
                     {task.title}
                   </h3>
 
                   {task.description && (
-                    <p className="text-gray-600 text-sm mt-1">
+                    <p className="text-gray-600 text-sm mt-1 break-words">
                       {task.description}
                     </p>
                   )}
@@ -132,7 +127,7 @@ export default function App() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center justify-end gap-3">
                   <span
                     className={`text-xs font-semibold px-2 py-1 rounded-full ${
                       task.completed
