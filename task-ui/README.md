@@ -125,15 +125,3 @@ npm run build
 ```
 Then upload `dist/` contents to S3.  
 If CloudFront: invalidate `/index.html` (or `/*`).
-
----
-
-## Common gotchas
-- **UI still hitting localhost in prod**
-  - Make sure API base URL isn’t hardcoded.
-  - Prefer `VITE_API_BASE_URL`.
-- **CORS errors in prod**
-  - Backend must allow your S3/CloudFront origin.
-- **Mobile overflow**
-  - Stack the “Add task” inputs/button on small screens (`flex-col sm:flex-row`)
-  - Add `min-w-0`, `break-words`, and `truncate` in the right places
